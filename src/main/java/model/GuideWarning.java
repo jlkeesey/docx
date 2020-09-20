@@ -1,30 +1,28 @@
 package model;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Represents a Warning callout.
  */
-public class GuideWarning extends GuideCallout {
-  public static Builder builder() {
+public class GuideWarning extends GuideParagraphListBase {
+  public GuideWarning(Iterable<GuideParagraph> iterable) {
+    super(GuideType.Warning, iterable);
+  }
+
+  public static @NotNull Builder builder() {
     return new Builder();
   }
 
-  public GuideWarning(Iterable<GuideParagraph> items) {
-    super(GuideType.Warning, items);
-  }
-
-  public static GuideWarning create(String text) {
-    return create(GuideParagraph.create(text).asList());
-  }
-
-  public static GuideWarning create(Iterable<GuideParagraph> items) {
-    return new GuideWarning(items);
-  }
-
-  public static class Builder
-      extends GuideParagraphListBase.BuilderBase<GuideWarning.Builder, GuideWarning, GuideParagraph> {
+  public static class Builder extends GuideParagraphListBase.BuilderBase<GuideWarning, Builder> {
     @Override
-    public GuideWarning build() {
+    public @NotNull GuideWarning build() {
       return new GuideWarning(items);
+    }
+
+    @Override
+    protected @NotNull Builder getThis() {
+      return this;
     }
   }
 }

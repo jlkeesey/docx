@@ -1,6 +1,6 @@
 package model;
 
-public abstract class GuideBase implements GuideFormatable {
+public abstract class GuideBase  {
 
   private final GuideType type;
 
@@ -12,10 +12,5 @@ public abstract class GuideBase implements GuideFormatable {
     return this.type;
   }
 
-  @Override
-  public String toString() {
-    StringBuilder builder = new StringBuilder();
-    format(builder);
-    return builder.toString();
-  }
+//  public abstract void visit
 }

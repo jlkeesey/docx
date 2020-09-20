@@ -1,6 +1,7 @@
 package model;
 
-import util.IndentAppendable;
+import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,14 +11,11 @@ import java.util.List;
  * Represents a complete guide. A guide contains a sequence of guide steps which can contain other descriptive
  * information about the step including sub-steps.
  */
-public class Guide implements Iterable<GuideStep>, GuideFormatable {
-  private final List<GuideStep> items = new ArrayList<>();
+public class Guide implements Iterable<GuideStep> {
+  private final ImmutableList<GuideStep> items;
 
-  /**
-   * Adds a new item to the guide.
-   */
-  public void add(GuideStep step) {
-    items.add(step);
+  public Guide(Iterable<GuideStep> iterable) {
+    this.items = ImmutableList.copyOf(iterable);
   }
 
   /**
@@ -28,12 +26,38 @@ public class Guide implements Iterable<GuideStep>, GuideFormatable {
   }
 
   @Override
-  public Iterator<GuideStep> iterator() {
+  public @NotNull Iterator<GuideStep> iterator() {
     return items.iterator();
   }
 
-  @Override
-  public void format(IndentAppendable appendable) {
-    items.forEach(item -> item.format(appendable));
+  public static class Builder {
+    private final List<GuideStep> items = new ArrayList<>();
+
+    public Guide build() {
+      return new Guide(items);
+    }
+
+    /**
+     * Adds a new item to the guide.
+     */
+    public Builder add(GuideStep step) {
+      items.add(step);
+      return this;
+    }
+
+    /**
+     * Adds a new item to the guide.
+     */
+    public Builder addAll(Iterable<GuideStep> iterable) {
+      for (GuideStep step : iterable) {
+        items.add(step);
+      }
+      return this;
+    }
+
+    public Builder clear() {
+      items.clear();
+      return this;
+    }
   }
 }

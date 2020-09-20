@@ -1,6 +1,6 @@
 package model;
 
-import util.IndentAppendable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,17 +47,7 @@ public class GuideStep extends GuideBase implements Iterable<GuideBase> {
   }
 
   @Override
-  public Iterator<GuideBase> iterator() {
+  public @NotNull Iterator<GuideBase> iterator() {
     return items.iterator();
-  }
-
-  @Override
-  public void format(IndentAppendable appendable) {
-    appendable.append(name()).append(": ").append(title()).endLine();
-    appendable.indent();
-    for (GuideBase item : items) {
-      item.format(appendable);
-    }
-    appendable.outdent();
   }
 }

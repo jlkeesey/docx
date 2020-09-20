@@ -1,7 +1,7 @@
 package model;
 
 import com.google.common.collect.ImmutableList;
-import util.IndentAppendable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -10,10 +10,10 @@ import java.util.List;
 /**
  * An abstraction for a model object that contains/is a list of paragraphs.
  */
-public abstract class GuideParagraphListBase<T extends GuideFormatable> extends GuideBase implements Iterable<T> {
-  protected final ImmutableList<T> paragraphs;
+public abstract class GuideParagraphListBase extends GuideBase implements Iterable<GuideParagraph> {
+  protected final ImmutableList<GuideParagraph> paragraphs;
 
-  protected GuideParagraphListBase(GuideType type, Iterable<T> iterable) {
+  protected GuideParagraphListBase(GuideType type, @NotNull Iterable<GuideParagraph> iterable) {
     super(type);
     this.paragraphs = ImmutableList.copyOf(iterable);
   }
@@ -29,30 +29,35 @@ public abstract class GuideParagraphListBase<T extends GuideFormatable> extends 
    * Returns a iterator over the {@code GuideTextItem} objects.
    */
   @Override
-  public Iterator<T> iterator() {
+  public @NotNull Iterator<GuideParagraph> iterator() {
     return paragraphs.iterator();
   }
 
-  @Override
-  public void format(IndentAppendable appendable) {
-    paragraphs.forEach(item -> item.format(appendable));
-    appendable.endLine();
-  }
+  protected static abstract class BuilderBase<T,B> {
+    protected @NotNull List<GuideParagraph> items = new ArrayList<>();
 
-  protected static abstract class BuilderBase<B extends BuilderBase<B,C,T>,C,T> {
-    protected List<T> items = new ArrayList<>();
+    public abstract @NotNull T build();
 
-    public abstract C build();
-
-    public B add(String text) {
-      return add(GuideParagraph.create(text));
+    public @NotNull B add(GuideParagraph value) {
+      items.add(value);
+      return getThis();
     }
 
-    public abstract B add(GuideParagraph paragraph);
+    /**
+     * Returns this downcasted to the child type. Helper to get around the downcasting problems with generics in Java.
+     */
+    protected abstract @NotNull B getThis();
 
-    public B add(T value) {
-      items.add(value);
-      return (B)this;
+    public @NotNull B addAll(@NotNull Iterable<GuideParagraph> iterable) {
+      for (GuideParagraph p : iterable) {
+        items.add(p);
+      }
+      return getThis();
+    }
+
+    public @NotNull B clear() {
+      items.clear();
+      return getThis();
     }
   }
 }

@@ -1,29 +1,28 @@
 package model;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Represents a Note callout.
  */
-public class GuideNote extends GuideCallout {
-  public static Builder builder() {
+public class GuideNote extends GuideParagraphListBase {
+  public GuideNote(Iterable<GuideParagraph> iterable) {
+    super(GuideType.Note, iterable);
+  }
+
+  public static @NotNull Builder builder() {
     return new Builder();
   }
 
-  public GuideNote(Iterable<GuideParagraph> items) {
-    super(GuideType.Note, items);
-  }
-
-  public static GuideNote create(String text) {
-    return create(GuideParagraph.create(text).asList());
-  }
-
-  public static GuideNote create(Iterable<GuideParagraph> items) {
-    return new GuideNote(items);
-  }
-
-  public static class Builder extends GuideParagraphListBase.BuilderBase<GuideNote.Builder, GuideNote, GuideParagraph> {
+  public static class Builder extends GuideParagraphListBase.BuilderBase<GuideNote, Builder> {
     @Override
-    public GuideNote build() {
+    public @NotNull GuideNote build() {
       return new GuideNote(items);
+    }
+
+    @Override
+    protected @NotNull Builder getThis() {
+      return this;
     }
   }
 }
