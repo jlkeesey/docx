@@ -92,19 +92,21 @@ public class IndentAppendable implements Appendable {
   /**
    * Increases the indentation level by 1. If the level is at {@link #MAX_LEVELS}, nothing happens.
    */
-  public void indent() {
+  public IndentAppendable indent() {
     if (level < MAX_LEVELS) {
       setLevel(level + 1);
     }
+    return this;
   }
 
   /**
    * Decreases the indentation level by 1. If the level is at zero, nothing happens.
    */
-  public void outdent() {
+  public IndentAppendable outdent() {
     if (0 < level) {
       setLevel(level - 1);
     }
+    return this;
   }
 
   /**

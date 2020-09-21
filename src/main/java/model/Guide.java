@@ -12,9 +12,11 @@ import java.util.List;
  * information about the step including sub-steps.
  */
 public class Guide implements Iterable<GuideStep> {
+  private final String title;
   private final ImmutableList<GuideStep> items;
 
-  public Guide(Iterable<GuideStep> iterable) {
+  private Guide(String title, Iterable<GuideStep> iterable) {
+    this.title = title;
     this.items = ImmutableList.copyOf(iterable);
   }
 
@@ -25,16 +27,37 @@ public class Guide implements Iterable<GuideStep> {
     return items.size();
   }
 
+  public void visit(GuideVisitor visitor) {
+    visitor.start(this);
+    for (int i = 0; i < items.size(); i++) {
+      items.get(i).visit(visitor, i);
+    }
+    visitor.end(this);
+  }
+
   @Override
   public @NotNull Iterator<GuideStep> iterator() {
     return items.iterator();
   }
 
+  public String title() {
+    return title;
+  }
+
   public static class Builder {
+    private String title = "";
     private final List<GuideStep> items = new ArrayList<>();
 
+    public String title() {
+      return this.title;
+    }
+
+    public void title(String title) {
+      this.title = title;
+    }
+
     public Guide build() {
-      return new Guide(items);
+      return new Guide(title, items);
     }
 
     /**

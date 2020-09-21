@@ -32,6 +32,12 @@ public interface GuideVisitor {
   default void end(GuideBullets element, int index) {
   }
 
+  default void start(GuideBulletItem element, int index) {
+  }
+
+  default void end(GuideBulletItem element, int index) {
+  }
+
   default void start(GuideCaution element, int index) {
   }
 
@@ -44,10 +50,22 @@ public interface GuideVisitor {
   default void end(GuideDescription element, int index) {
   }
 
+  default void start(GuideNote element, int index) {
+  }
+
+  default void end(GuideNote element, int index) {
+  }
+
   default void start(GuideNumbered element, int index) {
   }
 
   default void end(GuideNumbered element, int index) {
+  }
+
+  default void start(GuideNumberedItem element, int index) {
+  }
+
+  default void end(GuideNumberedItem element, int index) {
   }
 
   default void start(GuideWarning element, int index) {

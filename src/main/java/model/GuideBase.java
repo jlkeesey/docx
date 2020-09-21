@@ -12,5 +12,5 @@ public abstract class GuideBase  {
     return this.type;
   }
 
-//  public abstract void visit
+  public abstract void visit(GuideVisitor visitor, int index);
 }

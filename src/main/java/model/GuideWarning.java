@@ -14,6 +14,13 @@ public class GuideWarning extends GuideParagraphListBase {
     return new Builder();
   }
 
+  @Override
+  public void visit(GuideVisitor visitor, int index) {
+    visitor.start(this, index);
+    visitItems(visitor);
+    visitor.end(this, index);
+  }
+
   public static class Builder extends GuideParagraphListBase.BuilderBase<GuideWarning, Builder> {
     @Override
     public @NotNull GuideWarning build() {

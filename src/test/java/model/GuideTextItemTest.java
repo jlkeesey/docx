@@ -69,44 +69,16 @@ class GuideTextItemTest {
     assertTrue(item.isBold());
     assertFalse(item.isItalic());
   }
-//
-//  @Test
-//  void formatSimple() {
-//    GuideTextItem item1 = GuideTextItem.create("A test");
-//    StringBuilder builder = new StringBuilder();
-//
-//    item1.format(builder);
-//
-//    assertEquals("A test", builder.toString());
-//  }
-//
-//  @Test
-//  void formatItalic() {
-//    GuideTextItem item1 = GuideTextItem.create("A test", true, false);
-//    StringBuilder builder = new StringBuilder();
-//
-//    item1.format(builder);
-//
-//    assertEquals("_A test_", builder.toString());
-//  }
-//
-//  @Test
-//  void formatBold() {
-//    GuideTextItem item1 = GuideTextItem.create("A test", false, true);
-//    StringBuilder builder = new StringBuilder();
-//
-//    item1.format(builder);
-//
-//    assertEquals("**A test**", builder.toString());
-//  }
-//
-//  @Test
-//  void formatBoldItalic() {
-//    GuideTextItem item1 = GuideTextItem.create("A test", true, true);
-//    StringBuilder builder = new StringBuilder();
-//
-//    item1.format(builder);
-//
-//    assertEquals("**_A test_**", builder.toString());
-//  }
+
+  @Test
+  void visit() {
+    GuideTextItem item = GuideTextItem.create("Test");
+    TestVisitor visitor = new TestVisitor();
+
+    item.visit(visitor, 1);
+    item.visit(visitor, 20);
+
+    ImmutableList<String> expected = ImmutableList.of("1: Test", "20: Test");
+    assertIterableEquals(expected, visitor.calls);
+  }
 }

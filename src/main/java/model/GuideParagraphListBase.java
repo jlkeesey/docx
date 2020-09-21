@@ -11,18 +11,18 @@ import java.util.List;
  * An abstraction for a model object that contains/is a list of paragraphs.
  */
 public abstract class GuideParagraphListBase extends GuideBase implements Iterable<GuideParagraph> {
-  protected final ImmutableList<GuideParagraph> paragraphs;
+  protected final ImmutableList<GuideParagraph> items;
 
   protected GuideParagraphListBase(GuideType type, @NotNull Iterable<GuideParagraph> iterable) {
     super(type);
-    this.paragraphs = ImmutableList.copyOf(iterable);
+    this.items = ImmutableList.copyOf(iterable);
   }
 
   /**
    * Returns the number of paragraphs.
    */
   public int size() {
-    return paragraphs.size();
+    return items.size();
   }
 
   /**
@@ -30,10 +30,16 @@ public abstract class GuideParagraphListBase extends GuideBase implements Iterab
    */
   @Override
   public @NotNull Iterator<GuideParagraph> iterator() {
-    return paragraphs.iterator();
+    return items.iterator();
   }
 
-  protected static abstract class BuilderBase<T,B> {
+  protected void visitItems(GuideVisitor visitor) {
+    for (int i = 0; i < items.size(); i++) {
+      items.get(i).visit(visitor, i);
+    }
+  }
+
+  protected static abstract class BuilderBase<T, B> {
     protected @NotNull List<GuideParagraph> items = new ArrayList<>();
 
     public abstract @NotNull T build();

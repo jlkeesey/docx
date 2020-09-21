@@ -8,7 +8,9 @@ public enum GuideType {
   Step,
   Description,
   Bullets,
+  BulletItem,
   Numbered,
+  NumberedItem,
   Caution,
   Warning,
   Note

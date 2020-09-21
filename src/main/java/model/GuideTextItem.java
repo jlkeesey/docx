@@ -45,6 +45,10 @@ public class GuideTextItem {
     return text;
   }
 
+  public void visit(GuideVisitor visitor, int index) {
+    visitor.visit(this, index);
+  }
+
   public static class Builder {
     private String text = "";
     private boolean italic;

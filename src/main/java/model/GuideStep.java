@@ -50,4 +50,13 @@ public class GuideStep extends GuideBase implements Iterable<GuideBase> {
   public @NotNull Iterator<GuideBase> iterator() {
     return items.iterator();
   }
+
+  @Override
+  public void visit(GuideVisitor visitor, int index) {
+    visitor.start(this, name, index);
+    for (int i = 0; i < items.size(); i++) {
+      items.get(i).visit(visitor, i);
+    }
+    visitor.end(this, name, index);
+  }
 }

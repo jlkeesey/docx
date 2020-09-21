@@ -11,6 +11,11 @@ public class GuideTextFormatVisitor implements GuideVisitor {
   }
 
   @Override
+  public void end(Guide element) {
+    appendable.endLine();
+  }
+
+  @Override
   public void start(GuideStep element, String name, int index) {
 
 //    @Override
@@ -25,18 +30,63 @@ public class GuideTextFormatVisitor implements GuideVisitor {
   }
 
   @Override
-  public void start(GuideBullets element, int index) {
+  public void end(GuideStep element, String name, int index) {
+    appendable.endLine();
+  }
 
-//    @Override
-//    public void format(IndentAppendable appendable) {
-//      paragraphs.forEach(item -> {
-//        appendable.append("o ");
-//        item.format(appendable);
-//        appendable.endLine();
-//      });
-//      appendable.endLine();
-//    }
+  @Override
+  public void end(GuideBullets element, int index) {
+    appendable.endLine();
+  }
 
+  @Override
+  public void start(GuideNumberedItem element, int index) {
+    appendable.append(String.valueOf(index + 1)).append(". ");
+  }
+
+  @Override
+  public void end(GuideNumberedItem element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void end(GuideWarning element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void end(GuideParagraph element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void start(GuideBulletItem element, int index) {
+    appendable.append("o ");
+  }
+
+  @Override
+  public void end(GuideBulletItem element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void end(GuideCaution element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void end(GuideDescription element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void end(GuideNote element, int index) {
+    appendable.endLine();
+  }
+
+  @Override
+  public void end(GuideNumbered element, int index) {
+    appendable.endLine();
   }
 
   @Override
