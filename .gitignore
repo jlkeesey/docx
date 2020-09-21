@@ -1,3 +1,6 @@
 build
 gradle
 .gradle
+/test2/
+/output.html
+/~WRL0003.tmp

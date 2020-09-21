@@ -20,10 +20,10 @@ public interface GuideVisitor {
   default void end(Guide element) {
   }
 
-  default void start(GuideStep element, String name, int index) {
+  default void start(GuideSection element, String name, int index) {
   }
 
-  default void end(GuideStep element, String name, int index) {
+  default void end(GuideSection element, String name, int index) {
   }
 
   default void start(GuideBullets element, int index) {

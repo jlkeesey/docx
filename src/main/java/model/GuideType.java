@@ -5,7 +5,6 @@ package model;
  */
 public enum GuideType {
   Unknown,
-  Step,
   Description,
   Bullets,
   BulletItem,
@@ -13,5 +12,6 @@ public enum GuideType {
   NumberedItem,
   Caution,
   Warning,
+  Section,
   Note
 }

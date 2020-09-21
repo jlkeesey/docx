@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a Note callout.
  */
 public class GuideNote extends GuideParagraphListBase {
-  public GuideNote(Iterable<GuideParagraph> iterable) {
+  public GuideNote(@NotNull Iterable<GuideParagraph> iterable) {
     super(GuideType.Note, iterable);
   }
 
@@ -15,7 +15,7 @@ public class GuideNote extends GuideParagraphListBase {
   }
 
   @Override
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     visitItems(visitor);
     visitor.end(this, index);

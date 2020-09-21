@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a list of bulleted items. We currently don't support tacking the type of bullet.
  */
 public class GuideBulletItem extends GuideParagraphListBase {
-  public GuideBulletItem(Iterable<GuideParagraph> iterable) {
+  public GuideBulletItem(@NotNull Iterable<GuideParagraph> iterable) {
     super(GuideType.BulletItem, iterable);
   }
 
@@ -15,7 +15,7 @@ public class GuideBulletItem extends GuideParagraphListBase {
   }
 
   @Override
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     visitItems(visitor);
     visitor.end(this, index);

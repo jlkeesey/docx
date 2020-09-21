@@ -45,7 +45,7 @@ public class GuideTextItem {
     return text;
   }
 
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.visit(this, index);
   }
 

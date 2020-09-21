@@ -1,46 +1,65 @@
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import docx.DocxGuideReader;
+import html.HtmlFormatVisitor;
+import model.Guide;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
+import java.io.*;
 
 public class DocxConverter {
+  private static final boolean useReader = true;
+
   public static void main(String[] args) {
-    File input = new File("./test1.docx");
+    File input = new File("./test2.docx");
     try {
       FileInputStream stream = new FileInputStream(input);
-      XWPFDocument doc = new XWPFDocument(stream);
-      List<XWPFParagraph> paras = doc.getParagraphs();
-      for (XWPFParagraph p : paras) {
-        String lvl = "-";
-        CTP ctp = p.getCTP();
-        if (ctp != null) {
-          CTPPr ppr = ctp.getPPr();
-          if (ppr != null) {
-            CTDecimalNumber outlineLvl = ppr.getOutlineLvl();
-            if (outlineLvl != null) {
-              BigInteger val = outlineLvl.getVal();
-              if (val != null) {
-                lvl = val.toString();
-              }
-            }
-          }
-        }
-        System.out.printf("p[%s] (%s) lvl:%s: '%s'\n", p.getStyle(), p.getNumFmt(), lvl, p.getText());
-        System.out.printf("   nf:'%s' ni:%s nl:%s nlT:'%s' \n", p.getNumFmt(), p.getNumID(), p.getNumIlvl(), p.getNumLevelText());
-      }
+      DocxGuideReader reader = new DocxGuideReader(stream);
+      Guide guide = reader.read();
+      StringBuilder builder = new StringBuilder();
+      HtmlFormatVisitor visitor = new HtmlFormatVisitor(builder);
+      guide.visit(visitor);
+      String guideHTML = builder.toString();
+      System.out.println(guideHTML);
+
+      BufferedWriter writer = new BufferedWriter(new FileWriter("./output.html"));
+      writer.write(guideHTML);
+      writer.close();
+
     } catch (FileNotFoundException e) {
       System.err.printf("Unable to open file '%s\n  because %s\n", input.getAbsoluteFile(), e.getMessage());
     } catch (IOException e) {
-      System.err.printf("Failed to read DOCX file %s\n  because %s\n", input.getAbsoluteFile(), e.getMessage());
+      System.err.printf("Unable to write file '%s\n  because %s\n", input.getAbsoluteFile(), e.getMessage());
     }
-    System.out.print("Done.\n");
+  }
+
+  private static void processTable(XWPFTable table) {
+    System.out.printf("TBL: rows=%d\n", table.getNumberOfRows());
+  }
+
+  private static void processParagraph(XWPFParagraph paragraph) {
+//    String lvl = "-";
+//    CTP ctp = paragraph.getCTP();
+//    if (ctp != null) {
+//      CTPPr ppr = ctp.getPPr();
+//      if (ppr != null) {
+//        CTDecimalNumber outlineLvl = ppr.getOutlineLvl();
+//        if (outlineLvl != null) {
+//          BigInteger val = outlineLvl.getVal();
+//          if (val != null) {
+//            lvl = val.toString();
+//          }
+//        }
+//      }
+//    }
+    System.out.printf("p[%s] (%s) lvl:%s: '%s'\n",
+                      paragraph.getStyle(),
+                      paragraph.getNumFmt(),
+                      "-",
+                      paragraph.getText());
+    System.out.printf("   nf:'%s' ni:%s nl:%s nlT:'%s' \n",
+                      paragraph.getNumFmt(),
+                      paragraph.getNumID(),
+                      paragraph.getNumIlvl(),
+                      paragraph.getNumLevelText());
   }
 }

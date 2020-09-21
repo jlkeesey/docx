@@ -8,14 +8,15 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Represents a numbered list. Currently we only support lists that are numbered with arabic numbers, sequentially,
- * starting with 1.
+ * Represents a numbered list.
  */
 public class GuideNumbered extends GuideBase implements Iterable<GuideNumberedItem> {
   private final ImmutableList<GuideNumberedItem> items;
+  private final NumberedType numberedType;
 
-  public GuideNumbered(Iterable<GuideNumberedItem> iterable) {
+  public GuideNumbered(NumberedType numberedType, @NotNull Iterable<GuideNumberedItem> iterable) {
     super(GuideType.Numbered);
+    this.numberedType = numberedType;
     this.items = ImmutableList.copyOf(iterable);
   }
 
@@ -24,12 +25,24 @@ public class GuideNumbered extends GuideBase implements Iterable<GuideNumberedIt
   }
 
   @Override
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     for (int i = 0; i < items.size(); i++) {
       items.get(i).visit(visitor, i);
     }
     visitor.end(this, index);
+  }
+
+  public NumberedType numberedType() {
+    return numberedType;
+  }
+
+  public enum NumberedType {
+    LowerCase,
+    UpperCase,
+    LowerRoman,
+    UpperRoman,
+    Numbers
   }
 
   @NotNull
@@ -39,10 +52,11 @@ public class GuideNumbered extends GuideBase implements Iterable<GuideNumberedIt
   }
 
   public static class Builder {
+    private NumberedType type = NumberedType.Numbers;
     protected @NotNull List<GuideNumberedItem> items = new ArrayList<>();
 
     public @NotNull GuideNumbered build() {
-      return new GuideNumbered(items);
+      return new GuideNumbered(type, items);
     }
 
     public @NotNull Builder add(GuideNumberedItem value) {
@@ -59,6 +73,15 @@ public class GuideNumbered extends GuideBase implements Iterable<GuideNumberedIt
 
     public @NotNull Builder clear() {
       items.clear();
+      return this;
+    }
+
+    public NumberedType type() {
+      return type;
+    }
+
+    public @NotNull Builder type(NumberedType type) {
+      this.type = type;
       return this;
     }
   }

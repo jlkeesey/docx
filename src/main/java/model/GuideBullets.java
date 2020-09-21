@@ -13,7 +13,7 @@ import java.util.List;
 public class GuideBullets extends GuideBase implements Iterable<GuideBulletItem> {
   private final ImmutableList<GuideBulletItem> items;
 
-  public GuideBullets(Iterable<GuideBulletItem> iterable) {
+  public GuideBullets(@NotNull Iterable<GuideBulletItem> iterable) {
     super(GuideType.Bullets);
     this.items = ImmutableList.copyOf(iterable);
   }
@@ -23,7 +23,7 @@ public class GuideBullets extends GuideBase implements Iterable<GuideBulletItem>
   }
 
   @Override
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     for (int i = 0; i < items.size(); i++) {
       items.get(i).visit(visitor, i);

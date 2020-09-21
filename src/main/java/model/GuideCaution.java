@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a Caution callout.
  */
 public class GuideCaution extends GuideParagraphListBase {
-  public GuideCaution(Iterable<GuideParagraph> iterable) {
+  public GuideCaution(@NotNull Iterable<GuideParagraph> iterable) {
     super(GuideType.Caution, iterable);
   }
 
@@ -15,7 +15,7 @@ public class GuideCaution extends GuideParagraphListBase {
   }
 
   @Override
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     visitItems(visitor);
     visitor.end(this, index);

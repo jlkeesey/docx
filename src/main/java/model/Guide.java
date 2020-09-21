@@ -11,13 +11,53 @@ import java.util.List;
  * Represents a complete guide. A guide contains a sequence of guide steps which can contain other descriptive
  * information about the step including sub-steps.
  */
-public class Guide implements Iterable<GuideStep> {
+public class Guide implements Iterable<GuideSection> {
   private final String title;
-  private final ImmutableList<GuideStep> items;
 
-  private Guide(String title, Iterable<GuideStep> iterable) {
+  public String subTitle() {
+    return subTitle;
+  }
+
+  public void setSubTitle(String subTitle) {
+    this.subTitle = subTitle;
+  }
+
+  public String documentNumber() {
+    return documentNumber;
+  }
+
+  public void setDocumentNumber(String documentNumber) {
+    this.documentNumber = documentNumber;
+  }
+
+  public String revision() {
+    return revision;
+  }
+
+  public void setRevision(String revision) {
+    this.revision = revision;
+  }
+
+  private String subTitle;
+  private String documentNumber;
+  private String revision;
+  private final ImmutableList<GuideSection> items;
+
+  private Guide(
+      String title,
+      String subTitle,
+      String documentNumber,
+      String revision,
+      @NotNull Iterable<GuideSection> iterable) {
     this.title = title;
+    this.subTitle = subTitle;
+    this.documentNumber = documentNumber;
+    this.revision = revision;
     this.items = ImmutableList.copyOf(iterable);
+  }
+
+  public static @NotNull Builder builder() {
+    return new Builder();
   }
 
   /**
@@ -27,16 +67,17 @@ public class Guide implements Iterable<GuideStep> {
     return items.size();
   }
 
-  public void visit(GuideVisitor visitor) {
+  public void visit(@NotNull GuideVisitor visitor) {
     visitor.start(this);
     for (int i = 0; i < items.size(); i++) {
-      items.get(i).visit(visitor, i);
+      items.get(i)
+           .visit(visitor, i);
     }
     visitor.end(this);
   }
 
   @Override
-  public @NotNull Iterator<GuideStep> iterator() {
+  public @NotNull Iterator<GuideSection> iterator() {
     return items.iterator();
   }
 
@@ -46,7 +87,18 @@ public class Guide implements Iterable<GuideStep> {
 
   public static class Builder {
     private String title = "";
-    private final List<GuideStep> items = new ArrayList<>();
+    private String subTitle = "";
+    private String documentNumber = "";
+    private String revision = "";
+    private final List<GuideSection> items = new ArrayList<>();
+
+    public @NotNull Guide build() {
+      return new Guide(title, subTitle, documentNumber, revision, items);
+    }
+
+    public int sectionCount() {
+      return items.size();
+    }
 
     public String title() {
       return this.title;
@@ -56,14 +108,10 @@ public class Guide implements Iterable<GuideStep> {
       this.title = title;
     }
 
-    public Guide build() {
-      return new Guide(title, items);
-    }
-
     /**
      * Adds a new item to the guide.
      */
-    public Builder add(GuideStep step) {
+    public @NotNull Builder add(GuideSection step) {
       items.add(step);
       return this;
     }
@@ -71,15 +119,42 @@ public class Guide implements Iterable<GuideStep> {
     /**
      * Adds a new item to the guide.
      */
-    public Builder addAll(Iterable<GuideStep> iterable) {
-      for (GuideStep step : iterable) {
+    public @NotNull Builder addAll(@NotNull Iterable<GuideSection> iterable) {
+      for (GuideSection step : iterable) {
         items.add(step);
       }
       return this;
     }
 
-    public Builder clear() {
+    public @NotNull Builder clear() {
       items.clear();
+      return this;
+    }
+
+    public String subTitle() {
+      return subTitle;
+    }
+
+    public @NotNull Builder subTitle(String subTitle) {
+      this.subTitle = subTitle;
+      return this;
+    }
+
+    public String documentNumber() {
+      return documentNumber;
+    }
+
+    public @NotNull Builder documentNumber(String documentNumber) {
+      this.documentNumber = documentNumber;
+      return this;
+    }
+
+    public String revision() {
+      return revision;
+    }
+
+    public @NotNull Builder revision(String revision) {
+      this.revision = revision;
       return this;
     }
   }

@@ -38,7 +38,7 @@ public class GuideParagraph implements Iterable<GuideTextItem> {
     return items.iterator();
   }
 
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     for (int i = 0; i < items.size(); i++) {
       items.get(i).visit(visitor, i);

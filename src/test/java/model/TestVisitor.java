@@ -16,13 +16,13 @@ public class TestVisitor implements GuideVisitor {
   }
 
   @Override
-  public void start(GuideStep element, String name, int index) {
-    calls.add(String.format("%d: Start step '%s'", index, element.name()));
+  public void start(GuideSection element, String name, int index) {
+    calls.add(String.format("%d: Start section '%s'", index, element.name()));
   }
 
   @Override
-  public void end(GuideStep element, String name, int index) {
-    calls.add(String.format("%d: End step '%s'", index, element.name()));
+  public void end(GuideSection element, String name, int index) {
+    calls.add(String.format("%d: End section '%s'", index, element.name()));
   }
 
   @Override

@@ -33,13 +33,23 @@ public abstract class GuideParagraphListBase extends GuideBase implements Iterab
     return items.iterator();
   }
 
-  protected void visitItems(GuideVisitor visitor) {
+  protected void visitItems(@NotNull GuideVisitor visitor) {
     for (int i = 0; i < items.size(); i++) {
       items.get(i).visit(visitor, i);
     }
   }
 
-  protected static abstract class BuilderBase<T, B> {
+  public interface GuideParagraphListBuilder<T> {
+    @NotNull T add(GuideParagraph value);
+
+    @NotNull T addAll(@NotNull Iterable<GuideParagraph> iterable);
+
+    @NotNull T addAll(@NotNull Iterator<GuideParagraph> iterator);
+
+    @NotNull T clear();
+  }
+
+  protected static abstract class BuilderBase<T, B> implements GuideParagraphListBuilder<B> {
     protected @NotNull List<GuideParagraph> items = new ArrayList<>();
 
     public abstract @NotNull T build();
@@ -55,9 +65,12 @@ public abstract class GuideParagraphListBase extends GuideBase implements Iterab
     protected abstract @NotNull B getThis();
 
     public @NotNull B addAll(@NotNull Iterable<GuideParagraph> iterable) {
-      for (GuideParagraph p : iterable) {
-        items.add(p);
-      }
+      iterable.forEach(p -> items.add(p));
+      return getThis();
+    }
+
+    public @NotNull B addAll(@NotNull Iterator<GuideParagraph> iterator) {
+      iterator.forEachRemaining(p -> items.add(p));
       return getThis();
     }
 

@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a block of descriptive text. Each block/paragraph will be represented by a separate object.
  */
 public class GuideDescription extends GuideParagraphListBase {
-  private GuideDescription(Iterable<GuideParagraph> iterable) {
+  private GuideDescription(@NotNull Iterable<GuideParagraph> iterable) {
     super(GuideType.Description, iterable);
   }
 
@@ -15,7 +15,7 @@ public class GuideDescription extends GuideParagraphListBase {
   }
 
   @Override
-  public void visit(GuideVisitor visitor, int index) {
+  public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
     visitItems(visitor);
     visitor.end(this, index);
