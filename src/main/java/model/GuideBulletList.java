@@ -8,15 +8,21 @@ import org.jetbrains.annotations.NotNull;
 public class GuideBulletList extends GuideBase {
   public static final int MAX_LEVELS = 10;
 
+  private final int id;
   private final int level;
 
-  public GuideBulletList(int level, @NotNull Iterable<GuideBase> iterable) {
+  public GuideBulletList(int level, int id, @NotNull Iterable<GuideBase> iterable) {
     super(iterable);
     this.level = level;
+    this.id = id;
   }
 
   public static @NotNull Builder builder() {
     return new Builder();
+  }
+
+  public int id() {
+    return id;
   }
 
   public int level() {
@@ -30,11 +36,12 @@ public class GuideBulletList extends GuideBase {
     visitor.end(this, index);
   }
 
-  public static class Builder extends GuideBase.BuilderBase<GuideBulletList, Builder> {
+  public static class Builder extends GuideBase.BuilderBase<GuideBulletList, Builder> implements GuideListBuilder {
+    private int id = 0;
     private int level = 0;
 
     public @NotNull GuideBulletList build() {
-      return new GuideBulletList(level, items);
+      return new GuideBulletList(level, id, items);
     }
 
     @Override
@@ -47,13 +54,24 @@ public class GuideBulletList extends GuideBase {
       return this;
     }
 
-    public Builder level(int level) {
-      this.level = level;
+    public Builder id(int id) {
+      this.id = id;
       return this;
     }
 
+    @Override
+    public int id() {
+      return id;
+    }
+
+    @Override
     public int level() {
       return level;
+    }
+
+    public Builder level(int level) {
+      this.level = level;
+      return this;
     }
   }
 }

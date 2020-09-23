@@ -57,10 +57,11 @@ public class DocxGuideReader {
     return "-";
   }
 
-  private void makeBulletListItem(int level, XWPFParagraph paragraph) {
-    if (builders.bulletLevel() < level) {
+  private void makeBulletListItem(int level, int id, XWPFParagraph paragraph) {
+    if (builders.popUntilList(level, id)) {
       builders.push(GuideBulletList.builder()
-                                   .level(level));
+                                   .level(level)
+                                   .id(id));
     }
     builders.add(GuideBulletListItem.builder()
                                     .level(level)
@@ -82,12 +83,17 @@ public class DocxGuideReader {
     builders.pop();
   }
 
-  private void makeNumberListItem(int level, String numFmt, XWPFParagraph paragraph) {
-    if (builders.numberLevel() < level) {
-      NumberType numberType = numberFormatToNumberedType(numFmt);
-      builders.push(GuideNumberList.builder()
-                                   .level(level)
-                                   .numberType(numberType));
+  private void makeNumberList(int level, int id, String numFmt) {
+    NumberType numberType = numberFormatToNumberedType(numFmt);
+    builders.push(GuideNumberList.builder()
+                                 .level(level)
+                                 .id(id)
+                                 .numberType(numberType));
+  }
+
+  private void makeNumberListItem(int level, int id, String numFmt, XWPFParagraph paragraph) {
+    if (builders.popUntilList(level, id)) {
+      makeNumberList(level, id, numFmt);
     }
     builders.add(GuideNumberListItem.builder()
                                     .level(level)
@@ -172,10 +178,12 @@ public class DocxGuideReader {
       String numFmt = paragraph.getNumFmt();
       int level = paragraph.getNumIlvl()
                            .intValue();
+      int id = paragraph.getNumID()
+                        .intValue();
       if (numFmt.equalsIgnoreCase(NUMBER_FORMAT_BULLET)) {
-        makeBulletListItem(level, paragraph);
+        makeBulletListItem(level, id, paragraph);
       } else {
-        makeNumberListItem(level, numFmt, paragraph);
+        makeNumberListItem(level, id, numFmt, paragraph);
       }
     } else {
       if (style != null) {

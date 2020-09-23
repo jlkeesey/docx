@@ -18,8 +18,6 @@ class Acceptance {
     } else if (item instanceof GuideNumberListItem) {
       return (((GuideNumberListItem) item).level() == level);
     }
-    return !(item instanceof GuideBulletList) &&
-           !(item instanceof GuideNumberList) &&
-           !(item instanceof GuideSection);
+    return !(item instanceof GuideSection);
   }
 }
