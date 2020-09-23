@@ -26,52 +26,22 @@ public interface GuideVisitor {
   default void end(GuideSection element, String name, int index) {
   }
 
-  default void start(GuideBullets element, int index) {
+  default void start(GuideBulletList element, int index) {
   }
 
-  default void end(GuideBullets element, int index) {
+  default void end(GuideBulletList element, int index) {
   }
 
-  default void start(GuideBulletItem element, int index) {
+  default void start(GuideBulletListItem element, int index) {
   }
 
-  default void end(GuideBulletItem element, int index) {
+  default void end(GuideBulletListItem element, int index) {
   }
 
-  default void start(GuideCaution element, int index) {
+  default void start(GuideCallout element, int index) {
   }
 
-  default void end(GuideCaution element, int index) {
-  }
-
-  default void start(GuideDescription element, int index) {
-  }
-
-  default void end(GuideDescription element, int index) {
-  }
-
-  default void start(GuideNote element, int index) {
-  }
-
-  default void end(GuideNote element, int index) {
-  }
-
-  default void start(GuideNumbered element, int index) {
-  }
-
-  default void end(GuideNumbered element, int index) {
-  }
-
-  default void start(GuideNumberedItem element, int index) {
-  }
-
-  default void end(GuideNumberedItem element, int index) {
-  }
-
-  default void start(GuideWarning element, int index) {
-  }
-
-  default void end(GuideWarning element, int index) {
+  default void end(GuideCallout element, int index) {
   }
 
   default void start(GuideParagraph element, int index) {
@@ -80,6 +50,24 @@ public interface GuideVisitor {
   default void end(GuideParagraph element, int index) {
   }
 
-  default void visit(GuideTextItem element, int index) {
+  default void start(GuideNumberList element, int index) {
+  }
+
+  default void end(GuideNumberList element, int index) {
+  }
+
+  default void start(GuideNumberListItem element, int index) {
+  }
+
+  default void end(GuideNumberListItem element, int index) {
+  }
+
+  default void start(Paragraph element, int index) {
+  }
+
+  default void end(Paragraph element, int index) {
+  }
+
+  default void visit(TextRun element, int index) {
   }
 }

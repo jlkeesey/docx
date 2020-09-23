@@ -1,9 +1,8 @@
 package docx;
 
-import com.google.common.collect.ImmutableList;
 import model.*;
-import model.GuideNumbered.NumberedType;
-import model.GuideParagraphListBase.GuideParagraphListBuilder;
+import model.GuideCallout.CalloutType;
+import model.GuideNumberList.NumberType;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
@@ -14,27 +13,12 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 
 public class DocxGuideReader {
-  public static final String TITLE_STYLE = "Title";
-  public static final String SUBTITLE_STYLE = "Subtitle";
-  public static final String DOCUMENT_NUMBER_STYLE = "DocumentNumber";
-  public static final String DOCUMENT_REVISION_STYLE = "DocumentRevision";
-  public static final String HEADING_1_STYLE = "heading1";
-  public static final String HEADING_2_STYLE = "heading2";
   public static final String NUMBER_FORMAT_BULLET = "bullet";
 
-  private static final ImmutableList<String> frontMatter = ImmutableList.of(TITLE_STYLE,
-                                                                            SUBTITLE_STYLE,
-                                                                            DOCUMENT_NUMBER_STYLE,
-                                                                            DOCUMENT_REVISION_STYLE);
-
-  private Guide.Builder guideBuilder;
+  private final BuilderStack builders = new BuilderStack();
   private final XWPFDocument doc;
-  private final Stack<GuideSection.Builder> sectionBuilders = new Stack<>();
-  private GuideBullets.Builder bulletsBuilder;
-  private GuideNumbered.Builder numberedBuilder;
 
   public DocxGuideReader(InputStream input) {
     try {
@@ -45,95 +29,18 @@ public class DocxGuideReader {
   }
 
   public Guide read() {
-    guideBuilder = Guide.builder();
-    setDocumentFrontMatter(guideBuilder);
-    processDocument(guideBuilder);
+    return read(new DocxReaderConfig());
+  }
+
+  public Guide read(DocxReaderConfig config) {
+    Guide.Builder guideBuilder = Guide.builder();
+    builders.push(guideBuilder);
+    setDocumentFrontMatter(config, guideBuilder);
+    processDocument(config);
     return guideBuilder.build();
   }
 
-  private void processDocument(Guide.Builder guideBuilder) {
-    List<IBodyElement> elements = doc.getBodyElements();
-    for (IBodyElement element : elements) {
-      if (element instanceof XWPFParagraph) {
-        processParagraph((XWPFParagraph) element);
-      } else if (element instanceof XWPFTable) {
-        processTable((XWPFTable) element);
-      }
-    }
-    popSectionUntil(0); // Clear out all open sections
-  }
-
-  private void processParagraph(XWPFParagraph paragraph) {
-    String style = paragraph.getStyle();
-    if (paragraph.getNumFmt() != null) {
-      String numFmt = paragraph.getNumFmt();
-      if (numFmt.equalsIgnoreCase(NUMBER_FORMAT_BULLET)) {
-        if (bulletsBuilder == null) {
-          bulletsBuilder = GuideBullets.builder();
-        }
-        bulletsBuilder.add(GuideBulletItem.builder()
-                                          .add(GuideParagraph.builder()
-                                                             .add(GuideTextItem.create(paragraph.getText()))
-                                                             .build())
-                                          .build());
-      } else {
-        int numberLevel = paragraph.getNumIlvl()
-                                   .intValue();
-        if (numberLevel == 0) { // Currently we only handle one level
-          if (numberedBuilder == null) {
-            numberedBuilder = GuideNumbered.builder();
-            NumberedType numberedType = numberFormatToNumberedType(numFmt);
-            numberedBuilder.type(numberedType);
-          }
-          numberedBuilder.add(GuideNumberedItem.builder()
-                                               .add(GuideParagraph.builder()
-                                                                  .add(GuideTextItem.create(paragraph.getText()))
-                                                                  .build())
-                                               .build());
-        }
-      }
-    } else {
-      if (bulletsBuilder != null) {
-        addToSection(bulletsBuilder.build());
-        bulletsBuilder = null;
-      }
-      if (numberedBuilder != null) {
-        addToSection(numberedBuilder.build());
-        numberedBuilder = null;
-      }
-      if (style != null) {
-        if (style.equalsIgnoreCase(HEADING_1_STYLE)) {
-          handleSection(paragraph, 0, "%1$d.0");
-        } else if (style.equalsIgnoreCase(HEADING_2_STYLE)) {
-          handleSection(paragraph, 1, "%1$d.%2$d");
-        } else {
-          processDescription(paragraph);
-        }
-      } else {
-        processDescription(paragraph);
-      }
-    }
-  }
-
-  private void processDescription(XWPFParagraph paragraph) {
-    addToSection(GuideDescription.builder()
-                                 .add(GuideParagraph.builder()
-                                                    .add(GuideTextItem.create(paragraph.getText()))
-                                                    .build())
-                                 .build());
-  }
-
-  private NumberedType numberFormatToNumberedType(String numberFormat) {
-    return switch (numberFormat) {
-      case "lowerLetter" -> NumberedType.LowerCase;
-      case "upperLetter" -> NumberedType.UpperCase;
-      case "lowerRoman" -> NumberedType.LowerRoman;
-      case "upperRoman" -> NumberedType.UpperRoman;
-      default -> NumberedType.Numbers;
-    };
-  }
-
-  private String getOutlineLevel(XWPFParagraph paragraph) {
+  private String getOutlineLevel(DocxReaderConfig config, XWPFParagraph paragraph) {
     CTP ctp = paragraph.getCTP();
     if (ctp != null) {
       CTPPr ppr = ctp.getPPr();
@@ -150,107 +57,180 @@ public class DocxGuideReader {
     return "-";
   }
 
-  private void handleSection(XWPFParagraph paragraph, int level, String nameFormat) {
-    popSectionUntil(level);
-    GuideSection.Builder sectionBuilder = GuideSection.builder();
-    Integer[] sectionCounts = currentSectionCounts();
+  private void makeBulletListItem(int level, XWPFParagraph paragraph) {
+    if (builders.bulletLevel() < level) {
+      builders.push(GuideBulletList.builder()
+                                   .level(level));
+    }
+    builders.add(GuideBulletListItem.builder()
+                                    .level(level)
+                                    .add(GuideParagraph.builder()
+                                                       .paragraph(Paragraph.builder()
+                                                                           .add(TextRun.create(paragraph.getText()))
+                                                                           .build())
+                                                       .build())
+                                    .build());
+  }
+
+  private void makeCallout(
+      DocxReaderConfig config, CalloutType calloutType, String type, Iterator<IBodyElement> iterator) {
+    GuideCallout.Builder callout = GuideCallout.builder()
+                                               .calloutType(calloutType)
+                                               .title(type);
+    builders.push(callout);
+    processElements(config, iterator);
+    builders.pop();
+  }
+
+  private void makeNumberListItem(int level, String numFmt, XWPFParagraph paragraph) {
+    if (builders.numberLevel() < level) {
+      NumberType numberType = numberFormatToNumberedType(numFmt);
+      builders.push(GuideNumberList.builder()
+                                   .level(level)
+                                   .numberType(numberType));
+    }
+    builders.add(GuideNumberListItem.builder()
+                                    .level(level)
+                                    .add(GuideParagraph.builder()
+                                                       .paragraph(Paragraph.builder()
+                                                                           .add(TextRun.create(paragraph.getText()))
+                                                                           .build())
+                                                       .build())
+                                    .build());
+  }
+
+  private void makeParagraph(XWPFParagraph paragraph) {
+    builders.add(GuideParagraph.builder()
+                               .paragraph(Paragraph.builder()
+                                                   .add(TextRun.create(paragraph.getText()))
+                                                   .build())
+                               .build());
+  }
+
+  private NumberType numberFormatToNumberedType(String numberFormat) {
+    return switch (numberFormat) {
+      case "lowerLetter" -> NumberType.LowerCase;
+      case "upperLetter" -> NumberType.UpperCase;
+      case "lowerRoman" -> NumberType.LowerRoman;
+      case "upperRoman" -> NumberType.UpperRoman;
+      default -> NumberType.Numbers;
+    };
+  }
+
+  private void processCallout(DocxReaderConfig config, XWPFTable table) {
+    XWPFTableRow row = table.getRow(0);
+    List<XWPFTableCell> cells = row.getTableCells();
+    if (cells.size() == 1) {
+      XWPFTableCell cell = cells.get(0);
+      List<IBodyElement> elements = cell.getBodyElements();
+      Iterator<IBodyElement> iterator = elements.iterator();
+      XWPFParagraph firstParagraph = null;
+      while (iterator.hasNext()) {
+        IBodyElement element = iterator.next();
+        if (element instanceof XWPFParagraph) {
+          firstParagraph = (XWPFParagraph) element;
+          break;
+        }
+      }
+      if (firstParagraph == null) {
+        return;
+      }
+      String type = firstParagraph.getText();
+      if (type.equalsIgnoreCase(config.noteCalloutText())) {
+        makeCallout(config, CalloutType.Note, type, iterator);
+      } else if (type.equalsIgnoreCase(config.warningCalloutText())) {
+        makeCallout(config, CalloutType.Warning, type, iterator);
+      } else if (type.equalsIgnoreCase(config.cautionCalloutText())) {
+        makeCallout(config, CalloutType.Caution, type, iterator);
+      } else {
+        makeCallout(config, CalloutType.Other, type, iterator);
+      }
+    }
+  }
+
+  private void processDocument(DocxReaderConfig config) {
+    List<IBodyElement> elements = doc.getBodyElements();
+    Iterator<IBodyElement> iterator = elements.iterator();
+    processElements(config, iterator);
+    builders.close(); // Clear out all open sections
+  }
+
+  private void processElements(DocxReaderConfig config, Iterator<IBodyElement> iterator) {
+    while (iterator.hasNext()) {
+      IBodyElement element = iterator.next();
+      if (element instanceof XWPFParagraph) {
+        processParagraph(config, (XWPFParagraph) element);
+      } else if (element instanceof XWPFTable) {
+        processTable(config, (XWPFTable) element);
+      }
+    }
+  }
+
+  private void processParagraph(DocxReaderConfig config, XWPFParagraph paragraph) {
+    String style = paragraph.getStyle();
+    if (paragraph.getNumFmt() != null) {
+      String numFmt = paragraph.getNumFmt();
+      int level = paragraph.getNumIlvl()
+                           .intValue();
+      if (numFmt.equalsIgnoreCase(NUMBER_FORMAT_BULLET)) {
+        makeBulletListItem(level, paragraph);
+      } else {
+        makeNumberListItem(level, numFmt, paragraph);
+      }
+    } else {
+      if (style != null) {
+        if (style.equalsIgnoreCase(config.sectionLevel1Style())) {
+          processSection(config, 1, "%1$d.0", paragraph);
+        } else if (style.equalsIgnoreCase(config.sectionLevel2Style())) {
+          processSection(config, 2, "%1$d.%2$d", paragraph);
+        } else {
+          makeParagraph(paragraph);
+        }
+      } else {
+        makeParagraph(paragraph);
+      }
+    }
+  }
+
+  private void processSection(
+      DocxReaderConfig config, int level, String nameFormat, XWPFParagraph paragraph) {
+    builders.popUntilLevel(level - 1);
+    Integer[] sectionCounts = builders.sectionCounts();
     for (int i = 0; i < sectionCounts.length; i++) {
       sectionCounts[i]++; // Convert 0-based to 1-based
     }
-    pushSection(sectionBuilder);
-    sectionBuilder.name(String.format(nameFormat, (Object[]) sectionCounts));
-    sectionBuilder.title(paragraph.getText());
+    GuideSection.Builder sectionBuilder = GuideSection.builder()
+                                                      .level(level)
+                                                      .name(String.format(nameFormat, (Object[]) sectionCounts))
+                                                      .title(paragraph.getText());
+    builders.push(sectionBuilder);
   }
 
-  private Integer[] currentSectionCounts() {
-    Integer[] results = new Integer[sectionBuilders.size() + 1];
-    results[0] = guideBuilder.sectionCount();
-    for (int i = 0; i < sectionBuilders.size(); i++) {
-      results[i + 1] = sectionBuilders.get(i)
-                                      .sectionCount();
-    }
-    return results;
-  }
-
-  private void pushSection(GuideSection.Builder sectionBuilder) {
-    sectionBuilders.push(sectionBuilder);
-  }
-
-  private void popSectionUntil(int level) {
-    while (sectionBuilders.size() > level) {
-      popSection();
-    }
-  }
-
-  private void popSection() {
-    if (!sectionBuilders.empty()) {
-      GuideSection.Builder sectionBuilder = sectionBuilders.pop();
-      if (!sectionBuilders.empty()) {
-        sectionBuilders.peek()
-                       .add(sectionBuilder.build());
-      } else {
-        guideBuilder.add(sectionBuilder.build());
-      }
-    }
-  }
-
-  private void addToSection(GuideBase item) {
-    if (!sectionBuilders.empty()) {
-      sectionBuilders.peek()
-                     .add(item);
-    }
-  }
-
-  private void processTable(XWPFTable table) {
+  private void processTable(DocxReaderConfig config, XWPFTable table) {
     if (table.getNumberOfRows() == 1) {
-      XWPFTableRow row = table.getRow(0);
-      List<XWPFTableCell> cells = row.getTableCells();
-      if (cells.size() == 1) {
-        XWPFTableCell cell = cells.get(0);
-        List<XWPFParagraph> paragraphs = cell.getParagraphs();
-        Iterator<XWPFParagraph> iterator = paragraphs.iterator();
-        String type = iterator.next()
-                              .getText();
-        if (type.equalsIgnoreCase("note")) {
-          GuideNote.Builder note = GuideNote.builder();
-          consumeParagraphs(note, iterator);
-          addToSection(note.build());
-        } else if (type.equalsIgnoreCase("warning")) {
-          GuideWarning.Builder warn = GuideWarning.builder();
-          consumeParagraphs(warn, iterator);
-          addToSection(warn.build());
-        } else if (type.equalsIgnoreCase("caution")) {
-          GuideCaution.Builder caution = GuideCaution.builder();
-          consumeParagraphs(caution, iterator);
-          addToSection(caution.build());
-        }
-      }
+      processCallout(config, table);
     }
   }
 
-  private <T> void consumeParagraphs(GuideParagraphListBuilder<T> builder, Iterator<XWPFParagraph> iterator) {
-    while (iterator.hasNext()) {
-      XWPFParagraph para = iterator.next();
-      builder.add(GuideParagraph.builder()
-                                .add(GuideTextItem.create(para.getText()))
-                                .build());
-    }
-  }
-
-  private void setDocumentFrontMatter(Guide.Builder guideBuilder) {
+  private void setDocumentFrontMatter(DocxReaderConfig config, Guide.Builder guideBuilder) {
     doc.getParagraphs()
        .stream()
-       .filter(p -> frontMatter.contains(p.getStyle()))
+       .filter(p -> config.frontMatter()
+                          .contains(p.getStyle()))
        .forEach(p -> {
          String style = p.getStyle();
          String text = p.getText();
-         if (TITLE_STYLE.equalsIgnoreCase(style)) {
+         if (config.titleStyle()
+                   .equalsIgnoreCase(style)) {
            guideBuilder.title(text);
-         } else if (SUBTITLE_STYLE.equalsIgnoreCase(style)) {
+         } else if (config.subtitleStyle()
+                          .equalsIgnoreCase(style)) {
            guideBuilder.subTitle(text);
-         } else if (DOCUMENT_NUMBER_STYLE.equalsIgnoreCase(style)) {
+         } else if (config.documentNumberStyle()
+                          .equalsIgnoreCase(style)) {
            guideBuilder.documentNumber(text);
-         } else if (DOCUMENT_REVISION_STYLE.equalsIgnoreCase(style)) {
+         } else if (config.documentRevisionStyle()
+                          .equalsIgnoreCase(style)) {
            guideBuilder.revision(text);
          }
        });

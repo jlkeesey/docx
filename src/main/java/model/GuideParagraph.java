@@ -3,70 +3,61 @@ package model;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.concurrent.Immutable;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 /**
- * Provides a single run of text items that comprises a paragraph.
+ * Represents a block of descriptive text. Each block/paragraph will be represented by a separate object.
  */
-@Immutable
-public class GuideParagraph implements Iterable<GuideTextItem> {
-  private final ImmutableList<GuideTextItem> items;
+public class GuideParagraph extends GuideBase {
+  private final Paragraph paragraph;
 
-  private GuideParagraph(@NotNull Iterable<GuideTextItem> iterable) {
-    items = ImmutableList.copyOf(iterable);
+  private GuideParagraph(@NotNull Paragraph paragraph) {
+    super(ImmutableList.of());
+    this.paragraph = paragraph;
   }
 
-  /**
-   * Returns a new Builder object for object construction.
-   */
   public static @NotNull Builder builder() {
     return new Builder();
   }
 
-  public @NotNull ImmutableList<GuideParagraph> asList() {
-    return ImmutableList.of(this);
+  public String text() {
+    return paragraph.text();
   }
 
-  public int size() {
-    return items.size();
+  public Iterable<TextRun> textItemIterable() {
+    return paragraph;
   }
 
   @Override
-  public @NotNull Iterator<GuideTextItem> iterator() {
-    return items.iterator();
-  }
-
   public void visit(@NotNull GuideVisitor visitor, int index) {
     visitor.start(this, index);
-    for (int i = 0; i < items.size(); i++) {
-      items.get(i).visit(visitor, i);
-    }
+    paragraph.visit(visitor, index);
     visitor.end(this, index);
   }
 
-  public static class Builder {
-    private final ArrayList<GuideTextItem> items = new ArrayList<>();
+  public static class Builder extends GuideBase.BuilderBase<GuideParagraph, Builder> {
+    private Paragraph paragraph = Paragraph.builder()
+                                           .build();
 
+    @Override
     public @NotNull GuideParagraph build() {
-      return new GuideParagraph(items);
+      return new GuideParagraph(paragraph);
     }
 
-    public @NotNull Builder add(GuideTextItem item) {
-      items.add(item);
+    @Override
+    public boolean accept(GuideBase item) {
+      return false;
+    }
+
+    @Override
+    protected @NotNull Builder getThis() {
       return this;
     }
 
-    public @NotNull Builder addAll(@NotNull Iterable<GuideTextItem> iterable) {
-      for (GuideTextItem item : iterable) {
-        items.add(item);
-      }
-      return this;
+    public Paragraph paragraph() {
+      return this.paragraph;
     }
 
-    public @NotNull Builder clear() {
-      items.clear();
+    public Builder paragraph(Paragraph value) {
+      this.paragraph = value;
       return this;
     }
   }

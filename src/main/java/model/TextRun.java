@@ -6,12 +6,12 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public class GuideTextItem {
+public class TextRun {
   private final String text;
   private final boolean italic;
   private final boolean bold;
 
-  private GuideTextItem(String text, boolean italic, boolean bold) {
+  private TextRun(String text, boolean italic, boolean bold) {
     this.text = text;
     this.italic = italic;
     this.bold = bold;
@@ -21,15 +21,15 @@ public class GuideTextItem {
     return new Builder();
   }
 
-  public static @NotNull GuideTextItem create(String text) {
+  public static @NotNull TextRun create(String text) {
     return create(text, false, false);
   }
 
-  public static @NotNull GuideTextItem create(String text, boolean italic, boolean bold) {
-    return new GuideTextItem(text, italic, bold);
+  public static @NotNull TextRun create(String text, boolean italic, boolean bold) {
+    return new TextRun(text, italic, bold);
   }
 
-  public @NotNull ImmutableList<GuideTextItem> asList() {
+  public @NotNull ImmutableList<TextRun> asList() {
     return ImmutableList.of(this);
   }
 
@@ -54,8 +54,8 @@ public class GuideTextItem {
     private boolean italic;
     private boolean bold;
 
-    public @NotNull GuideTextItem build() {
-      return new GuideTextItem(text, italic, bold);
+    public @NotNull TextRun build() {
+      return new TextRun(text, italic, bold);
     }
 
     public @NotNull Builder text(String value) {

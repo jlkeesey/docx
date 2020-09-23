@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GuideTextItemTest {
+class TextRunTest {
 
   @Test
   void createString() {
-    GuideTextItem item = GuideTextItem.create("A test");
+    TextRun item = TextRun.create("A test");
 
     assertEquals("A test", item.text());
     assertFalse(item.isBold());
@@ -18,7 +18,7 @@ class GuideTextItemTest {
 
   @Test
   void createStringWithAttributed() {
-    GuideTextItem item = GuideTextItem.create("A test", true, true);
+    TextRun item = TextRun.create("A test", true, true);
 
     assertEquals("A test", item.text());
     assertTrue(item.isBold());
@@ -27,7 +27,7 @@ class GuideTextItemTest {
 
   @Test
   void asList() {
-    ImmutableList<GuideTextItem> item = GuideTextItem.create("A test").asList();
+    ImmutableList<TextRun> item = TextRun.create("A test").asList();
 
     assertNotNull(item);
     assertEquals(1, item.size());
@@ -36,7 +36,7 @@ class GuideTextItemTest {
 
   @Test
   void builderEmpty() {
-    GuideTextItem item = GuideTextItem.builder().build();
+    TextRun item = TextRun.builder().build();
 
     assertEquals("", item.text());
     assertFalse(item.isBold());
@@ -45,7 +45,7 @@ class GuideTextItemTest {
 
   @Test
   void builderText() {
-    GuideTextItem item = GuideTextItem.builder().text("A test").build();
+    TextRun item = TextRun.builder().text("A test").build();
 
     assertEquals("A test", item.text());
     assertFalse(item.isBold());
@@ -54,7 +54,7 @@ class GuideTextItemTest {
 
   @Test
   void builderTextItalic() {
-    GuideTextItem item = GuideTextItem.builder().text("A test").italic(true).build();
+    TextRun item = TextRun.builder().text("A test").italic(true).build();
 
     assertEquals("A test", item.text());
     assertFalse(item.isBold());
@@ -63,7 +63,7 @@ class GuideTextItemTest {
 
   @Test
   void builderTextBold() {
-    GuideTextItem item = GuideTextItem.builder().text("A test").bold(true).build();
+    TextRun item = TextRun.builder().text("A test").bold(true).build();
 
     assertEquals("A test", item.text());
     assertTrue(item.isBold());
@@ -72,7 +72,7 @@ class GuideTextItemTest {
 
   @Test
   void visit() {
-    GuideTextItem item = GuideTextItem.create("Test");
+    TextRun item = TextRun.create("Test");
     TestVisitor visitor = new TestVisitor();
 
     item.visit(visitor, 1);

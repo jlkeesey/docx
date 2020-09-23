@@ -1,142 +1,78 @@
 package model;
 
-import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Represents a complete guide. A guide contains a sequence of guide steps which can contain other descriptive
  * information about the step including sub-steps.
  */
-public class Guide implements Iterable<GuideSection> {
+public class Guide extends GuideBase {
+  private final String documentNumber;
+  private final String revision;
+  private final String subTitle;
   private final String title;
 
-  public String subTitle() {
-    return subTitle;
-  }
-
-  public void setSubTitle(String subTitle) {
-    this.subTitle = subTitle;
-  }
-
-  public String documentNumber() {
-    return documentNumber;
-  }
-
-  public void setDocumentNumber(String documentNumber) {
-    this.documentNumber = documentNumber;
-  }
-
-  public String revision() {
-    return revision;
-  }
-
-  public void setRevision(String revision) {
-    this.revision = revision;
-  }
-
-  private String subTitle;
-  private String documentNumber;
-  private String revision;
-  private final ImmutableList<GuideSection> items;
-
   private Guide(
-      String title,
-      String subTitle,
-      String documentNumber,
-      String revision,
-      @NotNull Iterable<GuideSection> iterable) {
+      String title, String subTitle, String documentNumber, String revision, @NotNull Iterable<GuideBase> iterable) {
+    super(iterable);
     this.title = title;
     this.subTitle = subTitle;
     this.documentNumber = documentNumber;
     this.revision = revision;
-    this.items = ImmutableList.copyOf(iterable);
   }
 
   public static @NotNull Builder builder() {
     return new Builder();
   }
 
-  /**
-   * Returns the number of items in this guide.
-   */
-  public int size() {
-    return items.size();
+  public String documentNumber() {
+    return documentNumber;
   }
 
-  public void visit(@NotNull GuideVisitor visitor) {
-    visitor.start(this);
-    for (int i = 0; i < items.size(); i++) {
-      items.get(i)
-           .visit(visitor, i);
-    }
-    visitor.end(this);
+  public String revision() {
+    return revision;
   }
 
-  @Override
-  public @NotNull Iterator<GuideSection> iterator() {
-    return items.iterator();
+  public String subTitle() {
+    return subTitle;
   }
 
   public String title() {
     return title;
   }
 
-  public static class Builder {
-    private String title = "";
-    private String subTitle = "";
+  public void visit(@NotNull GuideVisitor visitor) {
+    visit(visitor, 0);
+  }
+
+  public void visit(@NotNull GuideVisitor visitor, int index) {
+    visitor.start(this);
+    visitItems(visitor);
+    visitor.end(this);
+  }
+
+  public static class Builder extends GuideBase.BuilderBase<Guide, Builder> {
     private String documentNumber = "";
     private String revision = "";
-    private final List<GuideSection> items = new ArrayList<>();
+    private String subTitle = "";
+    private String title = "";
 
     public @NotNull Guide build() {
       return new Guide(title, subTitle, documentNumber, revision, items);
     }
 
+    @Override
+    public boolean accept(GuideBase item) {
+      return item instanceof GuideSection;
+    }
+
+    @Override
     public int sectionCount() {
       return items.size();
     }
 
-    public String title() {
-      return this.title;
-    }
-
-    public void title(String title) {
-      this.title = title;
-    }
-
-    /**
-     * Adds a new item to the guide.
-     */
-    public @NotNull Builder add(GuideSection step) {
-      items.add(step);
-      return this;
-    }
-
-    /**
-     * Adds a new item to the guide.
-     */
-    public @NotNull Builder addAll(@NotNull Iterable<GuideSection> iterable) {
-      for (GuideSection step : iterable) {
-        items.add(step);
-      }
-      return this;
-    }
-
-    public @NotNull Builder clear() {
-      items.clear();
-      return this;
-    }
-
-    public String subTitle() {
-      return subTitle;
-    }
-
-    public @NotNull Builder subTitle(String subTitle) {
-      this.subTitle = subTitle;
+    @Override
+    protected @NotNull Builder getThis() {
       return this;
     }
 
@@ -156,6 +92,23 @@ public class Guide implements Iterable<GuideSection> {
     public @NotNull Builder revision(String revision) {
       this.revision = revision;
       return this;
+    }
+
+    public String subTitle() {
+      return subTitle;
+    }
+
+    public @NotNull Builder subTitle(String subTitle) {
+      this.subTitle = subTitle;
+      return this;
+    }
+
+    public String title() {
+      return this.title;
+    }
+
+    public void title(String title) {
+      this.title = title;
     }
   }
 }

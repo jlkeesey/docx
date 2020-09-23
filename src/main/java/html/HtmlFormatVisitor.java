@@ -69,10 +69,10 @@ public class HtmlFormatVisitor implements GuideVisitor {
                             font-size: larger;
                             width: 100%%;
                           }
-                          .caution {
+                          .callout-caution {
                             background: #bb0;
                           }
-                          .warning {
+                          .callout-warning {
                             background: #b00;
                           }
                         </style>
@@ -137,63 +137,62 @@ public class HtmlFormatVisitor implements GuideVisitor {
   }
 
   @Override
-  public void start(GuideBullets element, int index) {
+  public void start(GuideBulletList element, int index) {
     openTag("ul");
   }
 
   @Override
-  public void end(GuideBullets element, int index) {
+  public void end(GuideBulletList element, int index) {
     endTag();
   }
 
   @Override
-  public void start(GuideBulletItem element, int index) {
+  public void start(GuideBulletListItem element, int index) {
     openTag("li");
   }
 
   @Override
-  public void end(GuideBulletItem element, int index) {
+  public void end(GuideBulletListItem element, int index) {
     endTag();
   }
 
   @Override
-  public void start(GuideCaution element, int index) {
-    openTag("div", ImmutableMap.of("class", "callout caution"));
+  public void start(GuideCallout element, int index) {
+    String className = switch (element.calloutType()) {
+      case Note -> "callout-note";
+      case Caution -> "callout-caution";
+      case Warning -> "callout-warning";
+      case Other -> "callout-other";
+    };
+    String title = switch (element.calloutType()) {
+      case Note -> "Note";
+      case Caution -> "Caution";
+      case Warning -> "Warning";
+      case Other -> element.title();
+    };
+    openTag("div", ImmutableMap.of("class", "callout " + className));
     openTagInline("div", ImmutableMap.of("class", "callout-title"));
-    appendable.append("Caution");
+    appendable.append(title);
     endTagInline();
   }
 
   @Override
-  public void end(GuideCaution element, int index) {
+  public void end(GuideCallout element, int index) {
     endTag();
   }
 
   @Override
-  public void start(GuideDescription element, int index) {
-    openTag("div", ImmutableMap.of("class", "description"));
+  public void start(GuideParagraph element, int index) {
+    //openTag("div", ImmutableMap.of("class", "paragraph"));
   }
 
   @Override
-  public void end(GuideDescription element, int index) {
-    endTag();
+  public void end(GuideParagraph element, int index) {
+    //endTag();
   }
 
   @Override
-  public void start(GuideNote element, int index) {
-    openTag("div", ImmutableMap.of("class", "callout note"));
-    openTagInline("div", ImmutableMap.of("class", "callout-title"));
-    appendable.append("Note");
-    endTagInline();
-  }
-
-  @Override
-  public void end(GuideNote element, int index) {
-    endTag();
-  }
-
-  @Override
-  public void start(GuideNumbered element, int index) {
+  public void start(GuideNumberList element, int index) {
     String type = switch (element.numberedType()) {
       case LowerCase -> "a";
       case UpperCase -> "A";
@@ -205,45 +204,32 @@ public class HtmlFormatVisitor implements GuideVisitor {
   }
 
   @Override
-  public void end(GuideNumbered element, int index) {
+  public void end(GuideNumberList element, int index) {
     endTag();
   }
 
   @Override
-  public void start(GuideNumberedItem element, int index) {
+  public void start(GuideNumberListItem element, int index) {
     openTag("li");
   }
 
   @Override
-  public void end(GuideNumberedItem element, int index) {
+  public void end(GuideNumberListItem element, int index) {
     endTag();
   }
 
   @Override
-  public void start(GuideWarning element, int index) {
-    openTag("div", ImmutableMap.of("class", "callout warning"));
-    openTagInline("div", ImmutableMap.of("class", "callout-title"));
-    appendable.append("Warning");
-    endTagInline();
-  }
-
-  @Override
-  public void end(GuideWarning element, int index) {
-    endTag();
-  }
-
-  @Override
-  public void start(GuideParagraph element, int index) {
+  public void start(Paragraph element, int index) {
     openTag("p");
   }
 
   @Override
-  public void end(GuideParagraph element, int index) {
+  public void end(Paragraph element, int index) {
     endTag();
   }
 
   @Override
-  public void visit(@NotNull GuideTextItem element, int index) {
+  public void visit(@NotNull TextRun element, int index) {
     if (element.isBold()) {
       openTagInline("b");
     }
