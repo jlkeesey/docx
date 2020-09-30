@@ -62,6 +62,24 @@ public interface GuideVisitor {
   default void end(GuideNumberListItem element, int index) {
   }
 
+  default void start(GuideTable element, int index) {
+  }
+
+  default void end(GuideTable element, int index) {
+  }
+
+  default void start(GuideTableRow element, int index) {
+  }
+
+  default void end(GuideTableRow element, int index) {
+  }
+
+  default void start(GuideTableCell element, int index) {
+  }
+
+  default void end(GuideTableCell element, int index) {
+  }
+
   default void start(Paragraph element, int index) {
   }
 

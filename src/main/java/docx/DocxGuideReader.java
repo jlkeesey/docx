@@ -4,9 +4,7 @@ import model.*;
 import model.GuideCallout.CalloutType;
 import model.GuideNumberList.NumberType;
 import org.apache.poi.xwpf.usermodel.*;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,12 +103,38 @@ public class DocxGuideReader {
                                     .build());
   }
 
+  private boolean isOn(CTOnOff flag) {
+    if (flag != null) {
+      return flag.isSetVal();
+    }
+    return false;
+  }
+
   private void makeParagraph(XWPFParagraph paragraph) {
-    builders.add(GuideParagraph.builder()
-                               .paragraph(Paragraph.builder()
-                                                   .add(TextRun.create(paragraph.getText()))
-                                                   .build())
-                               .build());
+    Paragraph.Builder paraBuilder = Paragraph.builder();
+    List<XWPFRun> runs = paragraph.getRuns();
+    for (XWPFRun run : runs) {
+      CTRPr rPr = run.getCTR()
+                     .getRPr();
+      String text = run.text();
+      if (text.contains("ENSURE")) {
+        System.out.println();
+      }
+      if (rPr == null) {
+        paraBuilder.add(TextRun.create(run.text()));
+      } else {
+        CTOnOff b = rPr.getB();
+        if (b != null && b.isSetVal()) {
+          System.out.println();
+        }
+        paraBuilder.add(TextRun.create(run.text(), isOn(rPr.getI()), isOn(b)));
+      }
+    }
+    paraBuilder.add(TextRun.create(paragraph.getText()));
+    GuideParagraph builder = GuideParagraph.builder()
+                                           .paragraph(paraBuilder.build())
+                                           .build();
+    builders.add(builder);
   }
 
   private NumberType numberFormatToNumberedType(String numberFormat) {
@@ -217,6 +241,20 @@ public class DocxGuideReader {
   private void processTable(DocxReaderConfig config, XWPFTable table) {
     if (table.getNumberOfRows() == 1) {
       processCallout(config, table);
+    } else {
+      builders.push(GuideTable.builder());
+      for (XWPFTableRow row : table.getRows()) {
+        builders.push(GuideTableRow.builder());
+        for (XWPFTableCell cell : row.getTableCells()) {
+          builders.push(GuideTableCell.builder());
+          processElements(config,
+                          cell.getBodyElements()
+                              .iterator());
+          builders.pop();
+        }
+        builders.pop();
+      }
+      builders.pop();
     }
   }
 

@@ -75,6 +75,14 @@ public class HtmlFormatVisitor implements GuideVisitor {
                           .callout-warning {
                             background: #b00;
                           }
+                          table {
+                            width: 100%%;
+                            border-collapse: collapse;
+                          }
+                          td {
+                            padding: 0px 10px;
+                            border: 1px solid;
+                          }
                         </style>
                       </head>
                       <body>
@@ -225,6 +233,36 @@ public class HtmlFormatVisitor implements GuideVisitor {
 
   @Override
   public void end(Paragraph element, int index) {
+    endTag();
+  }
+
+  @Override
+  public void start(GuideTable element, int index) {
+    openTag("table");
+  }
+
+  @Override
+  public void end(GuideTable element, int index) {
+    endTag();
+  }
+
+  @Override
+  public void start(GuideTableRow element, int index) {
+    openTag("tr");
+  }
+
+  @Override
+  public void end(GuideTableRow element, int index) {
+    endTag();
+  }
+
+  @Override
+  public void start(GuideTableCell element, int index) {
+    openTag("td");
+  }
+
+  @Override
+  public void end(GuideTableCell element, int index) {
     endTag();
   }
 
